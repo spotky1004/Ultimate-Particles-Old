@@ -27,7 +27,12 @@ keypress = {};
 document.addEventListener('keydown', keyUp);
 document.addEventListener('keyup', keyDown);
 function keyUp(e) {
+  console.log(e.keyCode);
   keypress[e.keyCode] = true;
+  if (!tempFlag && keypress['65']) {
+    tempFlag = 1;
+    levelA();
+  }
   if (!tempFlag) {
     tempFlag = 1;
     level1();
@@ -83,7 +88,7 @@ function particleCalc() {
     if (enemyArr[i][0].includes(1) && (Math.abs(enemyArr[i][2][0]) >= 1-enemyArr[i][1]/2 || Math.abs(enemyArr[i][2][1]) >= 1-enemyArr[i][1]/2)) {
       enemyArr[i][2][0] += Math.sin(enemyArr[i][4]*Math.PI/180)*enemyArr[i][3]/100*(1/boxSize)*speedMulThis*(tSpeed/33);
       enemyArr[i][2][1] += Math.cos(enemyArr[i][4]*Math.PI/180)*enemyArr[i][3]/100*(1/boxSize)*speedMulThis*(tSpeed/33);
-      enemyArr[i][4] = 360-enemyArr[i][4];
+      enemyArr[i][4] = Math.random()*360;
       /* if (Math.abs(enemyArr[i][2][0]) >= 1-enemyArr[i][1]/2) {
         if (enemyArr[i][2][0] >= 1-enemyArr[i][1]/2) {
           enemyArr[i][4] = 270-(enemyArr[i][4]-270)%360;
