@@ -41,6 +41,9 @@ function levelA() {
         boxSize = 1;
       }
     }
+    if (loopCount%300 == 0) {
+      destoryParticle(0.8, 0.3);
+    }
   }, 15);
   audio = new Audio('sounds/lv5.wav');
   audio.play();
