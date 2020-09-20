@@ -1,0 +1,17 @@
+* {
+  margin: 0; padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background-color: #333;
+}
+#warpCanvas {
+  display: block; float: left;
+  padding: 1vh;
+  background-color: #222;
+  box-shadow: 0 0 6vh #222;
+}
+#gameArea {
+  box-shadow: 0 0 0.5vh #444;
+}
