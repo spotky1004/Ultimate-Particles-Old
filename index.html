@@ -2,17 +2,369 @@
 <html dir="ltr">
   <head>
     <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css2?family=Nova+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css?ver=0.11">
-    <script src="setVar.js?ver=0.11"></script>
-    <script src="index.js?ver=0.11" defer></script>
-    <script src="levels.js?ver=0.11"></script>
-    <title>Ultimate Particles v0.11</title>
+    <script src="setVar.js?ver=1.0"></script>
+    <script src="index.js?ver=1.0" defer></script>
+    <script src="mapEditor.js?ver=1.0" defer></script>
+    <script src="levels.js?ver=1.0"></script>
+    <title>Ultimate Particles v1.0</title>
   </head>
   <body>
-    <span id="warpCanvas">
-      <canvas id="gameArea" width="300" height="300">
+    <div id="warpAll">
+      <div id="mainScreen">
+        <div class="headerTxt">
+          <span class="hslRotationC">Ultimate Particles (ver α)</span>
+        </div>
+        <div id="rankDisplay">
+          <div>
+            Your rank is <span id="totRank">0.00</span> <span id="rankStat">(<span id="firstRankStat">0.00</span>+<span id="secondRankStat">0.00</span>)</span>
+          </div>
+          <div>
+            <span id="nextStage">Reach <span id="nextStageRank">10.00</span> rank to open next stage</span>
+          </div>
+        </div>
+        <table id="levelGrid">
+          <tbody>
+            <tr>
+              <td class="locked" onclick="if(1){level1();}">1</td><td class="locked" onclick="if(1){levelA();}">2</td><td class="locked">3</td><td class="locked">4</td><td class="locked">5</td>
+            </tr>
+            <tr>
+              <td class="locked">6</td><td class="locked">7</td><td class="locked">8</td><td class="locked">9</td><td class="locked">10</td>
+            </tr>
+            <tr>
+              <td class="locked">11</td><td class="locked">12</td><td class="locked">13</td><td class="locked">14</td><td class="locked">15</td>
+            </tr>
+            <tr>
+              <td class="locked">16</td><td class="locked">17</td><td class="locked">18</td><td class="locked">19</td><td class="locked">20</td>
+            </tr>
+            <tr>
+              <td class="locked">21</td><td class="locked">22</td><td class="locked">23</td><td class="locked">24</td><td class="locked">25</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="fileButton" onclick="enterEditor();">
+          Map Editor
+        </div>
+      </div>
+      <div id="mapEditor" style="display:none">
+        <div id="editorHeader" class="headerTxt">
+          Map Editor
+        </div>
+        <div id="fileMenu">
+          <div class="fileButton" onclick="openTextFile();">
+            Open File
+          </div>
+          <div class="fileButton" onclick="mapData={};loadMap();">
+            New Map
+          </div>
+          <div class="fileButton" onclick="exitFileload();">
+            Exit
+          </div>
+        </div>
+      </div>
+      <div id="editorScreen" style="display:none">
+        <div id="editorTop">
+          <span id="exitEditor" onclick="exitEditor()">Exit</span>
+          <span id="mapName" contenteditable spellcheck="false">{mapName}</span>
+          <span id="editorSave" onclick="download(mapData.name, JSON.stringify(mapData, null, '\t'))">Save</span>
+        </div>
+        <span id="editorTest">
+          <canvas id="tempGameArea" width="300" height="300"></canvas>
+        </span>
+        <span id="editorUI">
+          <div id="topNav">
+            <span class="selectedTab" onclick="editorTab(0)">Global</span>
+            <span onclick="editorTab(1)">Action</span>
+          </div>
+          <div id="editorSubTab">
+            <div id="editorTabGolbal">
+              <!--Golbal settings here!-->
+            </div>
+            <div id="editorTabAction" style="display:none">
+              <div id="actionTopNav">
+                <span class="" onclick="actionTool(0)">Dupe</span>
+                <span onclick="actionTool(-1);addAction();">Add</span>
+                <span onclick="actionTool(1)">Del</span>
+              </div>
+              <div id="actionContainer">
+                <!-- Actions here! -->
+              </div>
+              <div id="actionEdit" style="display:none">
+                <div id="exitActionEdit" onclick="exitActionEdit()">
+                  exit
+                </div>
+                <div class="actionHeaders">
+                  Global
+                </div>
+                <div id="actionGlobal" class="actionSettingBox">
+                  <div class="actionFormBox">
+                    <span>Start Time</span>
+                    <span>
+                      <div class="disabled">
+                        N
+                      </div>
+                      <div class="disabled">
+                        i
+                      </div>
+                    </span>
+                    <span id="ai0-0-0" class="actionInput" contenteditable spellcheck="false">0</span>
+                    <span>s ~</span>
+                    <span id="ai0-0-1" class="actionInput" contenteditable spellcheck="false">0</span>
+                    <span>s</span>
+                  </div>
+                  <div class="actionFormBox">
+                    <span>End Time</span>
+                    <span>
+                      <div class="disabled">
+                        N
+                      </div>
+                      <div class="disabled">
+                        i
+                      </div>
+                    </span>
+                    <span id="ai0-1-0" class="actionInput" contenteditable spellcheck="false">0</span>
+                    <span>s ~</span>
+                    <span id="ai0-1-1" class="actionInput" contenteditable spellcheck="false">0</span>
+                    <span>s</span>
+                  </div>
+                  <div class="actionFormBox">
+                    <span>Interval</span>
+                    <span>
+                      <div class="disabled">
+                        N
+                      </div>
+                      <div class="disabled">
+                        i
+                      </div>
+                    </span>
+                    <span id="ai0-2-0" class="actionInput" contenteditable spellcheck="false">0</span>
+                    <span>ms ~</span>
+                    <span id="ai0-2-1" class="actionInput" contenteditable spellcheck="false">0</span>
+                    <span>ms</span>
+                  </div>
+                </div>
+                <div class="actionHeaders">
+                  Action (0/5)
+                </div>
+                <div class="actionSettingBox">
+                  <span class="addChildAction" onclick="addChildAction(0)">
+                    <div style="background-color: #000; width: 5vh; height: 5vh; margin: 2.5vh;">
 
-      </canvas>
-    </span>
+                    </div>
+                  </span>
+                </div>
+                <div id="actionList">
+                  <!--Action List here!-->
+                </div>
+              </div>
+              <div id="actionChildEdit" style="display:none">
+                <div style="display:none">
+                  <div id="exitActionEdit" onclick="exitChildAction()">
+                    exit
+                  </div>
+                  <div class="actionHeaders">
+                    Type
+                  </div>
+                  <div id="particleActionBox" class="actionSettingBox">
+                    <span class="addChildAction" onclick="selParticle(0)">
+                      <div style="background-color: #000; width: 5vh; height: 5vh; margin: 2.5vh;"></div>
+                    </span>
+                    <span class="addChildAction" onclick="selParticle(1)">
+                      <div style="background-color: #0c6312; width: 5vh; height: 5vh; margin: 2.5vh;"></div>
+                    </span>
+                    <span class="addChildAction" onclick="selParticle(2)">
+                      <div style="background-color: #21807e; width: 5vh; height: 5vh; margin: 2.5vh;"></div>
+                    </span>
+                    <span class="addChildAction" onclick="selParticle(3)">
+                      <div style="background-color: #bd43e6; width: 5vh; height: 5vh; margin: 2.5vh;"></div>
+                    </span>
+                  </div>
+                  <div class="actionHeaders">
+                    Global
+                  </div>
+                  <div id="particleAttr" class="actionSettingBox">
+                    <div class="actionFormBox">
+                      <span>Size</span>
+                      <span>
+                        <div class="" onclick="switchRand(0)">
+                          N
+                        </div>
+                        <div class="disabled">
+                          i
+                        </div>
+                      </span>
+                      <span id="ai1-0-0" class="actionInput" contenteditable spellcheck="false">0</span>
+                      <span>x ~</span>
+                      <span id="ai1-0-1" class="actionInput" contenteditable spellcheck="false">0</span>
+                      <span>x</span>
+                    </div>
+                    <div class="actionFormBox">
+                      <span>Position</span>
+                      <span>
+                        <div class="" onclick="switchRand(1)">
+                          R
+                        </div>
+                        <div class="disabled">
+                          i
+                        </div>
+                      </span>
+                      <span>r</span>
+                      <span id="ai1-1-0" class="actionInput" contenteditable spellcheck="false">0</span>
+                      <span>, </span>
+                      <span id="ai1-1-1" class="actionInput" contenteditable spellcheck="false">0</span>
+                    </div>
+                    <div class="actionFormBox">
+                      <span>Speed</span>
+                      <span>
+                        <div class="" onclick="switchRand(2)">
+                          N
+                        </div>
+                        <div class="disabled">
+                          i
+                        </div>
+                      </span>
+                      <span id="ai1-2-0" class="actionInput" contenteditable spellcheck="false">0</span>
+                      <span>x ~</span>
+                      <span id="ai1-2-1" class="actionInput" contenteditable spellcheck="false">0</span>
+                      <span>x</span>
+                    </div>
+                    <div class="actionFormBox">
+                      <span>Deg</span>
+                      <span>
+                        <div class="" onclick="switchRand(3)">
+                          N
+                        </div>
+                        <div class="disabled">
+                          i
+                        </div>
+                      </span>
+                      <span id="ai1-3-0" class="actionInput" contenteditable spellcheck="false">0</span>
+                      <span>o ~</span>
+                      <span id="ai1-3-1" class="actionInput" contenteditable spellcheck="false">0</span>
+                      <span>o</span>
+                    </div>
+                    <div class="actionFormBox">
+                      <span>Disappear</span>
+                      <span>
+                        <div class="" onclick="switchRand(4)">
+                          N
+                        </div>
+                        <div class="disabled">
+                          i
+                        </div>
+                      </span>
+                      <span id="ai1-4-0" class="actionInput" contenteditable spellcheck="false">0</span>
+                      <span>s ~</span>
+                      <span id="ai1-4-1" class="actionInput" contenteditable spellcheck="false">0</span>
+                      <span>s</span>
+                    </div>
+                  </div>
+                  <div id="particleHeader" class="actionHeaders">
+                    Attr - basic
+                  </div>
+                  <div class="actionSettingBox">
+                    <div class="actionFormBox">
+                      <span>Appear</span>
+                      <span>
+                        <div class="disabled">
+                          N
+                        </div>
+                        <div class="disabled">
+                          i
+                        </div>
+                      </span>
+                      <span id="ai2-0-0" class="actionInput" style="display:none;" contenteditable spellcheck="false">0</span>
+                      <span style="display:none;">%</span>
+                      <div id="ai2-0-1" class="flagButton" onclick="editorFlag(0);">
+                        No
+                      </div>
+                    </div>
+                    <div id="leaserAttr" style="display:none;">
+                      <div class="actionFormBox">
+                        <span>lDecay</span>
+                        <span>
+                          <div class="disabled">
+                            N
+                          </div>
+                          <div class="disabled">
+                            i
+                          </div>
+                        </span>
+                        <span id="ai3-0-0" class="actionInput" contenteditable spellcheck="false">0</span>
+                        <span>s</span>
+                        <span id="ai3-0-1" class="actionInput" contenteditable spellcheck="false" style="display:none;">0</span>
+                        <span style="display:none;">s</span>
+                      </div>
+                      <div class="actionFormBox">
+                        <span>lInterval</span>
+                        <span>
+                          <div class="disabled">
+                            N
+                          </div>
+                          <div class="disabled">
+                            i
+                          </div>
+                        </span>
+                        <span id="ai3-1-0" class="actionInput" contenteditable spellcheck="false">0</span>
+                        <span>ms</span>
+                        <span id="ai3-1-1" class="actionInput" contenteditable spellcheck="false" style="display:none;">0</span>
+                        <span style="display:none;">ms</span>
+                      </div>
+                      <div class="actionFormBox">
+                        <span>lSpeed</span>
+                        <span>
+                          <div class="disabled">
+                            N
+                          </div>
+                          <div class="disabled">
+                            i
+                          </div>
+                        </span>
+                        <span id="ai3-2-0" class="actionInput" contenteditable spellcheck="false">0</span>
+                        <span>x</span>
+                        <span id="ai3-2-1" class="actionInput" contenteditable spellcheck="false" style="display:none;">0</span>
+                        <span style="display:none;">ms</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:none">
+
+                </div>
+              </div>
+              <div id="actionBottomNav">
+                <span onclick="actionPageMove(-1)"><</span>
+                <span>
+                  <div id="actionPageNow">
+                    1
+                  </div>
+                  <div id="actionPageMax">
+                    1
+                  </div>
+                </span>
+                <span onclick="actionPageMove(1)">></span>
+              </div>
+            </div>
+          </div>
+        </span>
+        <div id="editorController" onclick="editorPlay();">
+          Start
+        </div>
+      </div>
+      <div id="gameWarp" style="display:none">
+        <div id="scoreArea">
+          <span id="stageTime">0.00s</span><span id="bestTime">/0.00s</span>
+          <span id="scoreGain">
+            <span id="firstScore">0.00</span>+<span id="secondScore">0.00</span><span id="bestScore">/0.00+0.00</span>
+          </span>
+        </div>
+        <span id="warpCanvas">
+          <canvas id="gameArea" width="300" height="300">
+
+          </canvas>
+        </span>
+      </div>
+    </div>
   </body>
 </html>

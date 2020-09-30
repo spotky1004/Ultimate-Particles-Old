@@ -1,54 +1,67 @@
-function level1() {
-  loopCount = 0;
-  playerSize = 0.1;
-  playerSpeed = 0.8;
-  boxSize = 1;
-  bulletInterval = setInterval( function () {
-    if (Math.random() < 0.1+loopCount/10000) {
-      makeParticle([0], 0.02+Math.sqrt(loopCount)/10000, 'r0', 0.6);
-      loopCount++;
-      playerSize *= 0.9999;
-      changeBoxSize(boxSize*0.9999);
-    }
-  }, 20);
-  audio = new Audio('sounds/lv1.wav');
-  audio.play();
-  audio.addEventListener('ended', function() {
-    this.currentTime = 0;
-    this.play();
-  }, false);
+function setBasicVars() {
+  playerPos = [0, 0];
 }
-function levelA() {
-  loopCount = 0;
-  playerSize = 0.05;
-  playerSpeed = 1.6;
-  boxSize = 1;
-  bulletInterval = setInterval( function () {
-    if (Math.random() < 0.1+loopCount/1000) {
-      partiThis = [0];
-      if (Math.random() < 0.2) {
-        partiThis.push(1);
-      }
-      if (Math.random() < 0.2) {
-        partiThis.push(2);
-      }
-      makeParticle(partiThis, 0.03, 'r0', 1.3);
-      loopCount++;
-      playerSize *= 0.9995;
-      changeBoxSize(boxSize*0.9995);
-      if (playerSize < 0.02) {
-        playerSize = 0.05;
-        boxSize = 1;
+sTimeArr = [];
+eTimeArr = [];
+interArr = [];
+function startLevel(map) {
+  sTimeArr = [];
+  eTimeArr = [];
+  interArr = [];
+  loopArr = [];
+  for (var i = 0; i < map.map.action.length; i++) {
+    sTimeArr.push(0);
+    eTimeArr.push(0);
+    interArr.push(0);
+    loopArr.push(0);
+  }
+  for (var i = 0; i < map.map.action.length; i++) {
+    startOut(map, i);
+    clearInter(map, i);
+  }
+}
+function startOut(map, num) {
+  sTimeArr[num] = setTimeout( function () {
+    startInter(map, num);
+  }, map.map.action[num].startTime[1]*1000);
+}
+function startInter(map, num) {
+  interArr[num] = setInterval( function () {
+    loopArr[num]++;
+    for (var i = 0; i < map.map.action[0].action.length; i++) {
+      var focusVar = map.map.action[0].action[i];
+      switch (focusVar.actionType) {
+        case 0:
+        var tType = [];
+        var thisAttr = {};
+        for (const j in focusVar.type) {
+          if (Math.random() < focusVar.type[j][0]) {
+            tType.push(Number(j))
+          }
+          for (const k in focusVar.type[j][1]) {
+            thisAttr[k] = focusVar.type[j][1][k];
+          }
+        }
+        var thisSize = ((focusVar.size[0] == 1) ? randRange(focusVar.size[1], focusVar.size[2]) : focusVar.size[1]);
+        var thisPosition = ((focusVar.position[0] == 1) ? 'r' + focusVar.position[1] : [focusVar.position[1], focusVar.position[2]]);
+        var thisSpeed = ((focusVar.speed[0] == 1) ? randRange(focusVar.speed[1], focusVar.speed[2]) : focusVar.speed[1]);
+        var thisDeg = ((focusVar.deg[0] == 1) ? randRange(focusVar.deg[1], focusVar.deg[2]) : focusVar.deg[1]);
+        var thisDisappear = ((focusVar.disappear[0] == 1) ? randRange(focusVar.disappear[1], focusVar.disappear[2]) : focusVar.disappear[1]);
+        makeParticle(tType, thisSize, thisPosition, thisSpeed, thisDeg, thisDisappear, thisDisappear, thisAttr);
+          break;
       }
     }
-    if (loopCount%300 == 0) {
-      destoryParticle(0.8, 0.3);
-    }
-  }, 15);
-  audio = new Audio('sounds/lv5.wav');
-  audio.play();
-  audio.addEventListener('ended', function() {
-    this.currentTime = 0;
-    this.play();
-  }, false);
+  }, map.map.action[num].interval[1]);
+}
+function clearInter(map, num) {
+  eTimeArr[num] = setTimeout( function () {
+    clearInterval(interArr[num])
+  }, map.map.action[num].endTime[1]*1000+10);
+}
+function endInterval(map) {
+  for (var i = 0; i < map.map.action.length; i++) {
+    clearInterval(interArr[i]);
+    clearTimeout(sTimeArr[i]);
+    clearTimeout(eTimeArr[i]);
+  }
 }

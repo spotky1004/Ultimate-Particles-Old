@@ -1,5 +1,5 @@
-const canvas = document.querySelector('#gameArea');
-const c = canvas.getContext('2d');
+canvas = document.querySelector('#gameArea');
+c = canvas.getContext('2d');
 
 playerPos = [0, 0];
 playerSize = 0.1;
@@ -7,7 +7,9 @@ playerSpeed = 0.8;
 enemyArr = [];
 boxSize = 1;
 tempFlag = 0;
+editing = 0;
 
+//basic game function
 function getPosition(position) {
   return (position+1)*canvas.width/2;
 }
@@ -23,29 +25,46 @@ function drawParticle(position, colArr=['000'], size=0.04, opacity=1) {
   c.globalAlpha = 1;
 }
 
+//system function
 keypress = {};
 document.addEventListener('keydown', keyUp);
 document.addEventListener('keyup', keyDown);
 function keyUp(e) {
-  console.log(e.keyCode);
   keypress[e.keyCode] = true;
-  if (!tempFlag && keypress['65']) {
+  /* if (!tempFlag && keypress['65']) {
     tempFlag = 1;
     levelA();
   }
   if (!tempFlag) {
     tempFlag = 1;
     level1();
-  }
+  } */
 }
 function keyDown(e) {
   keypress[e.keyCode] = false;
 }
+function createElementFromHTML(htmlString) {
+  var div = document.createElement('div');
+  div.innerHTML = htmlString.trim();
+  return div.firstChild;
+}
+function randRange(min, max) {
+  return min+Math.random()*(max-min);
+}
 
+//game loop
 function setBoxSize() {
-  screenSize = Math.min(innerWidth-innerHeight*0.02, innerHeight*0.98);
+  if (!editing) {
+    screenSize = Math.min(innerWidth-innerHeight*0.02, innerHeight*0.98);
+  } else {
+    pereElement = document.querySelector('#editorTest').getBoundingClientRect();
+    screenSize = Math.min(pereElement.width-innerHeight*0.02, pereElement.height-innerHeight*0.02);
+  }
   canvas.width = screenSize*boxSize;
   canvas.height = screenSize*boxSize;
+  if (editing) {
+    document.querySelector('#editorTest > #gameArea').style.marginLeft = (pereElement.width-innerHeight*0.02-canvas.width)/2 + 'px';
+  }
   document.querySelector('#warpCanvas').style.margin = `${(innerHeight*0.98-screenSize*boxSize)/2}px 0px 0px ${((innerWidth-innerHeight*0.02)-screenSize*boxSize)/2}px`;
 }
 function drawBox() {
@@ -56,7 +75,7 @@ function drawBox() {
   for (var i = 0; i < enemyArr.length; i++) {
     colArr = [];
     for (var j = 0; j < enemyArr[i][0].length; j++) {
-      colArr.push(enemyData[enemyArr[i][0][j]].col);
+      colArr.push(particleData[enemyArr[i][0][j]].col);
     }
     drawParticle(enemyArr[i][2], colArr, enemyArr[i][1], enemyArr[i][5]/enemyArr[i][6]);
   }
@@ -84,20 +103,14 @@ function particleCalc() {
     var speedMulThis = 1;
     if (enemyArr[i][0].includes(2)) speedMulThis *= 1.7;
     enemyArr[i][2][0] += Math.sin(enemyArr[i][4]*Math.PI/180)*enemyArr[i][3]/100*(1/boxSize)*speedMulThis*(tSpeed/33);
-    enemyArr[i][2][1] += Math.cos(enemyArr[i][4]*Math.PI/180)*enemyArr[i][3]/100*(1/boxSize)*speedMulThis*(tSpeed/33);
+    enemyArr[i][2][1] -= Math.cos(enemyArr[i][4]*Math.PI/180)*enemyArr[i][3]/100*(1/boxSize)*speedMulThis*(tSpeed/33);
+    if (enemyArr[i][0].includes(3) && (Math.abs(enemyArr[i][2][0]) >= 1-enemyArr[i][1]/2 || Math.abs(enemyArr[i][2][1]) >= 1-enemyArr[i][1]/2)) {
+      shootLaser(enemyArr[i][2], (enemyArr[i][4]+180)%360, enemyArr[i][1], enemyArr[i][7].leaserDecay, enemyArr[i][7].leaserInterval, enemyArr[i][7].leaserSpeed);
+    }
     if (enemyArr[i][0].includes(1) && (Math.abs(enemyArr[i][2][0]) >= 1-enemyArr[i][1]/2 || Math.abs(enemyArr[i][2][1]) >= 1-enemyArr[i][1]/2)) {
       enemyArr[i][2][0] += Math.sin(enemyArr[i][4]*Math.PI/180)*enemyArr[i][3]/100*(1/boxSize)*speedMulThis*(tSpeed/33);
-      enemyArr[i][2][1] += Math.cos(enemyArr[i][4]*Math.PI/180)*enemyArr[i][3]/100*(1/boxSize)*speedMulThis*(tSpeed/33);
+      enemyArr[i][2][1] -= Math.cos(enemyArr[i][4]*Math.PI/180)*enemyArr[i][3]/100*(1/boxSize)*speedMulThis*(tSpeed/33);
       enemyArr[i][4] = Math.random()*360;
-      /* if (Math.abs(enemyArr[i][2][0]) >= 1-enemyArr[i][1]/2) {
-        if (enemyArr[i][2][0] >= 1-enemyArr[i][1]/2) {
-          enemyArr[i][4] = 270-(enemyArr[i][4]-270)%360;
-        } else {
-
-        }
-      } else {
-
-      } */
     } else if (Math.abs(enemyArr[i][2][0]) >= 1+enemyArr[i][1]/2 || Math.abs(enemyArr[i][2][1]) >= 1+enemyArr[i][1]/2) {
       toDestory.push(i);
     }
@@ -114,8 +127,45 @@ function particleCalc() {
     enemyArr.splice(toDestory[i], 1);
   }
 }
+function hslToRgb(h, s, l){
+    var r, g, b;
 
-function makeParticle(type=[0], size=0.02, position=[0,-1], speed=1, deg=Math.random()*360, delSpan=-1, delSpanM=-1) {
+    if(s == 0){
+        r = g = b = l; // achromatic
+    }else{
+        var hue2rgb = function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return Math.round(r * 255).toString(16) + Math.round(g * 255).toString(16) + Math.round(b * 255).toString(16);
+}
+
+//calc advenced particle
+function shootLaser(position, deg, size, decay=0.5, interval=10, speed=0.1) {
+  position[0] += Math.sin(deg*Math.PI/180)*size*2;
+  position[1] -= Math.cos(deg*Math.PI/180)*size*2;
+  makeParticle([4], size, [position[0], position[1]], speed, Math.random()*360, decay, decay);
+  laserTimeout = setTimeout( function() {
+    if (!(Math.abs(position[0]) >= 1-size/2 || Math.abs(position[1]) >= 1-size/2) && tempFlag) {
+      shootLaser(position, deg, size, decay, interval, speed);
+    }
+  }, interval);
+}
+
+//game function
+function makeParticle(type=[0], size=0.02, position=[0,-1], speed=1, deg=Math.random()*360, delSpan=-1, delSpanM=-1, attr={}) {
   if (typeof(position) == 'string') {
     //random
     if (position.startsWith('r')) {
@@ -150,7 +200,7 @@ function makeParticle(type=[0], size=0.02, position=[0,-1], speed=1, deg=Math.ra
       }
     }
   }
-  enemyArr.push([type, size, position, speed, deg, delSpan, delSpanM]);
+  enemyArr.push([type, size, position, speed, deg, delSpan, delSpanM, attr]);
 }
 function destoryParticle(per=1, delSpan=0.5, type='all') {
   for (var i = 0; i < enemyArr.length; i++) {
@@ -187,47 +237,31 @@ function changeBoxSize(size=1) {
 function levelEnd() {
   collisionAudio = new Audio('sounds/collision.wav');
   collisionAudio.play();
-  audio.pause();
+  try {
+    audio.pause();
+  } catch {
+
+  }
   destoryParticle(1, 0, 'all');
   clearInterval(bulletInterval);
+  clearTimeout(laserTimeout);
   tempFlag = 0;
+  endInterval(mapData);
+  updateEditorPlay();
 }
 
+//game loop
 tSpeed = 20;
 setInterval( function () {
-  /*if (Math.random() < 0.5) {
-    makeParticle([0], 0.02, 'r0', 0.7);
-  }*/
   setBoxSize();
   playerCalc();
   particleCalc();
   drawBox();
+  if (editing) {
+    textboxHandle();
+  }
 }, tSpeed);
-bulletInterval = setInterval( function () {
 
-}, 100);
-
-function hslToRgb(h, s, l){
-    var r, g, b;
-
-    if(s == 0){
-        r = g = b = l; // achromatic
-    }else{
-        var hue2rgb = function hue2rgb(p, q, t){
-            if(t < 0) t += 1;
-            if(t > 1) t -= 1;
-            if(t < 1/6) return p + (q - p) * 6 * t;
-            if(t < 1/2) return q;
-            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-            return p;
-        }
-
-        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        var p = 2 * l - q;
-        r = hue2rgb(p, q, h + 1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
-    }
-
-    return Math.round(r * 255).toString(16) + Math.round(g * 255).toString(16) + Math.round(b * 255).toString(16);
-}
+//init
+bulletInterval = setInterval( function () {}, 100);
+laserTimeout = setTimeout( function () {}, 100);
